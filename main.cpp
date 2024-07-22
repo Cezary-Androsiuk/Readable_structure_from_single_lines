@@ -15,6 +15,7 @@ constexpr size_t stepReadSize = 1024 * 1024; // 10 MB
 constexpr char rangeCharactersIn[] = {'{', '(', '['};
 constexpr char rangeCharactersOut[] = {'}', ')', ']'};
 constexpr char separateCharacters[] = {',', ';'};
+constexpr char quotesCharacters[] = {'"', '\''};
 
 std::string getDeepthString(int deepth)
 {
@@ -31,7 +32,7 @@ size_t belongToArray(const char character, const char* array, size_t arraySize)
     return -1;
 }
 
-std::string processStep(const char* readedStep, size_t stepSize, int &deepth)
+std::string processStep(const char* readedStep, size_t stepSize, int &deepth, char &inQuotes)
 {
     std::string processedStep = "";
     for(int j=0; j<stepSize; j++)
@@ -39,10 +40,46 @@ std::string processStep(const char* readedStep, size_t stepSize, int &deepth)
         const char &character = readedStep[j];
         size_t position;
 
+        position = belongToArray(character, quotesCharacters, sizeof(quotesCharacters));
+        if(position != -1)
+        {   // found in quotes array
+            // printf("character found in quotesCharacters %c\n", character);
+            const auto &charquotes = quotesCharacters[position];
+
+            if(inQuotes == '\0')
+            {
+                // printf("inQuotes is null and quotes %c starts\n", charquotes);
+                inQuotes = charquotes;
+                processedStep += character;
+                continue;
+            }
+            else if(inQuotes == charquotes)
+            {
+                // printf("inQuotes is %c and quotes %c stops\n", inQuotes, charquotes);
+                inQuotes = '\0';
+                processedStep += character;
+                continue;
+            }
+            else
+            {
+                // printf("found %c charquotes but inQuotes is %c, then skipped\n", charquotes, inQuotes);
+                processedStep += character;
+                continue;
+            }
+
+        }
+        
+        if(inQuotes)
+        {
+            // printf("character in quotes rage %c\n", character);
+            processedStep += character;
+            continue;
+        }
+
         position = belongToArray(character, rangeCharactersIn, sizeof(rangeCharactersIn));
         if(position != -1)
         {   // found in array
-            // printf("found rangeCharactersIn %c\n", character);
+            // printf("character found in rangeCharactersIn %c\n", character);
 
             processedStep += '\n';
             processedStep += getDeepthString(deepth) + character + '\n';
@@ -54,7 +91,7 @@ std::string processStep(const char* readedStep, size_t stepSize, int &deepth)
         position = belongToArray(character, rangeCharactersOut, sizeof(rangeCharactersOut));
         if(position != -1)
         {   // found in array
-            // printf("found rangeCharactersOut %c\n", character);
+            // printf("character found in rangeCharactersOut %c\n", character);
 
             if(deepth > 0)
                 --deepth;
@@ -66,7 +103,7 @@ std::string processStep(const char* readedStep, size_t stepSize, int &deepth)
         position = belongToArray(character, separateCharacters, sizeof(separateCharacters));
         if(position != -1)
         {   // found in array
-            // printf("found separateCharacters %c\n", character);
+            // printf("character found in separateCharacters %c\n", character);
 
             processedStep += character;
             processedStep += '\n';
@@ -74,7 +111,7 @@ std::string processStep(const char* readedStep, size_t stepSize, int &deepth)
             continue;
         }
 
-        // printf("not found %c\n", character);
+        // printf("character not found %c\n", character);
         processedStep += character;
     }
     return processedStep;
@@ -110,6 +147,7 @@ int main()
 
     size_t readedFileSize = 0;
     int deepth = 0;
+    char inQuotes = '\0';
     while (fileSize > readedFileSize)
     {
         size_t readSize = 0;
@@ -126,7 +164,7 @@ int main()
         char buffer[stepReadSize];
         infile.read(buffer, stepReadSize);
 
-        std::string processedStep = processStep(buffer, readSize, deepth);
+        std::string processedStep = processStep(buffer, readSize, deepth, inQuotes);
 
         outfile.write(processedStep.c_str(), processedStep.size());
     }

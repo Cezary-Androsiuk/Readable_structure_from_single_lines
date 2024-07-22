@@ -32,8 +32,7 @@ The program allows you to convert a compressed file, such as a Json file contain
                     "Abbrev": "ISO 8879:1986",
                     "GlossDef": 
                     {
-                        "para": "A meta-markup language,
-                         used to create markup languages such as DocBook.",
+                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
                         "GlossSeeAlso": 
                         [
                             "GML",
