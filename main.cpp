@@ -20,63 +20,59 @@ std::string getDeepthString(int deepth)
     return std::string(deepth *4, ' ');
 }
 
+size_t belongToArray(const char character, const char* array, size_t arraySize)
+{
+    for(int i=0; i<arraySize; i++)
+    {
+        if(character == array[i])
+            return i;
+    }
+    return -1;
+}
+
 std::string processStep(const char* readedStep, size_t stepSize, int &deepth)
 {
     std::string processedStep = "";
     for(int j=0; j<stepSize; j++)
     {
         const char &character = readedStep[j];
-        bool found = false;
+        size_t position;
 
-        for(int i=0; i<sizeof(rangeCharactersIn); i++)
-        {
-            if(rangeCharactersIn[i] == character)
-            {
-                // printf("found rangeCharactersIn %c\n", character);
+        position = belongToArray(character, rangeCharactersIn, sizeof(rangeCharactersIn));
+        if(position != -1)
+        {   // found in array
+            // printf("found rangeCharactersIn %c\n", character);
 
-                processedStep += '\n';
-                processedStep += getDeepthString(deepth) + character + '\n';
-                ++deepth;
-                processedStep += getDeepthString(deepth);
-                found = true;
-                break;
-            }
+            processedStep += '\n';
+            processedStep += getDeepthString(deepth) + character + '\n';
+            ++deepth;
+            processedStep += getDeepthString(deepth);
+            continue;
         }
+        
+        position = belongToArray(character, rangeCharactersOut, sizeof(rangeCharactersOut));
+        if(position != -1)
+        {   // found in array
+            // printf("found rangeCharactersOut %c\n", character);
 
-        if(found) continue;
-
-        for(int i=0; i<sizeof(rangeCharactersOut); i++)
-        {
-            if(rangeCharactersOut[i] == character)
-            {
-                // printf("found rangeCharactersOut %c\n", character);
-
+            if(deepth > 0)
                 --deepth;
-                processedStep += + '\n';
-                processedStep += getDeepthString(deepth) + character;
-                found = true;
-                break;
-            }
+            processedStep += + '\n';
+            processedStep += getDeepthString(deepth) + character;
+            continue;
+        }
+        
+        position = belongToArray(character, separateCharacters, sizeof(separateCharacters));
+        if(position != -1)
+        {   // found in array
+            // printf("found separateCharacters %c\n", character);
+
+            processedStep += character;
+            processedStep += '\n';
+            processedStep += getDeepthString(deepth);
+            continue;
         }
 
-        if(found) continue;
-        
-        for(int i=0; i<sizeof(separateCharacters); i++)
-        {
-            if(separateCharacters[i] == character)
-            {
-                // printf("found separateCharacters %c\n", character);
-
-                processedStep += character;
-                processedStep += '\n';
-                processedStep += getDeepthString(deepth);
-                found = true;
-                break;
-            }
-        }
-
-        if(found) continue;
-        
         // printf("not found %c\n", character);
         processedStep += character;
     }
