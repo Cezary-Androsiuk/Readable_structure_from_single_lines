@@ -7,6 +7,7 @@
 
 // compile:
 // g++ main.cpp cpp\OpenDialog.cpp cpp\Support.cpp -lcomdlg32 -o main.exe
+// https://json.org/example.html
 
 typedef std::string str;
 
